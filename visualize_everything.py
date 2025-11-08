@@ -34,10 +34,10 @@ def smooth_average(values, scale):
 
 
 
-general_features = ["Susceptible", "Recovered", "Generally_Infected"]
+general_features = ["Generally_Infected"]
 mortality_features = []
 variant_features = []
-vaccine_features = ["Vaccinated", "Fully_Vaccinated", "Vaccine_1", "Vaccine_2"]
+vaccine_features = []
 
 
 #This dictionary contains all the features of interest. To add more features as a seperate image,
@@ -100,7 +100,7 @@ def visualize(index, in_file):#Visualize feature per file of interest.\
                 low_ci_95.append(lci95)
                 high_ci_95.append(hci95)
             #For normal representation, change smoothness to 1
-            smoothness = 7
+            smoothness = 1
             smooth_mean = smooth_average(avg,smoothness)
             df_stats = pd.DataFrame()
             df_stats["Step"] = df["Step"].unique()
@@ -140,6 +140,8 @@ def visualize(index, in_file):#Visualize feature per file of interest.\
             legend = mpatches.Patch(color=cur_color)
             legends_list.append(legend)
 
+        mem = psutil.virtual_memory()
+        print("Memory_Available: ", mem.available / (1024 * 1024), "MB")
         ax.set_title(image_name)
         plt.axis('tight')
         plt.legend(legends_list, feature_list, bbox_to_anchor=(0.90, 1.1), loc="upper left", borderaxespad=0, fontsize='xx-small')

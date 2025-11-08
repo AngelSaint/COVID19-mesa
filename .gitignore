@@ -2,5 +2,9 @@
 __pycache__
 *.png
 *.csv
-.idea
+scenarios/Verifier/Test_nokmob
 
+scenarios/Verifier/Test_kmob
+
+.idea
+scenarios/Verifier/

@@ -3,8 +3,6 @@
 # University of Illinois at Urbana-Champaign
 # {nunezco,jake}@illinois.edu
 
-# python3.9 covidserver.py scenarios/Vaccination_Scenarios_Attempt_4/Variant_Data.json
-
 # A simple tunable model for COVID-19 response
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.modules import ChartModule
@@ -17,7 +15,6 @@ from covidmodel import Stage
 from covidmodel import AgeGroup
 from covidmodel import SexGroup
 from covidmodel import ValueGroup
-import database
 
 # Specific model data
 
@@ -27,6 +24,8 @@ virus_param_list = []
 for virus in virus_data["variant"]:
     virus_param_list.append(virus_data["variant"][virus])
 print(virus_param_list)
+
+
 
 
 # Observed distribution of mortality rate per age
@@ -95,7 +94,7 @@ def agent_portrayal(agent):
                  "Filled": "true",
                  "Layer": 0,
                  "r": 0.5}
-    if agent.agent_data.vaccinated:
+    if agent.vaccinated:
         portrayal["Color"] = "lime"
         portrayal["Layer"] = 0
     elif agent.stage == Stage.SUSCEPTIBLE:
@@ -131,7 +130,7 @@ def agent_portrayal(agent):
 
     return portrayal
 
-grid = CanvasGrid(agent_portrayal, 50, 50, 800, 800)
+grid = CanvasGrid(agent_portrayal,None, 50, 50, 800, 800)
 
 chart = ChartModule([{"Label": "N",
                       "Color": "Darkblue"},
@@ -346,8 +345,6 @@ chart_vaccines = ChartModule([
                     data_collector_name='datacollector'
 )
 
-db = database.Database()
-
 model_params = {
     "num_agents": 260,
     "width": 50,
@@ -395,18 +392,7 @@ model_params = {
     "distribution_rate": UserSettableParameter("slider", "distribution rate", 20, 0, 100, 1),
     "cost_per_vaccine": UserSettableParameter("slider", "cost_per_vaccine", 200, 10, 1000, 10),
     "vaccination_percent": UserSettableParameter("slider", "vaccination_percent", 0.5, 0, 1, 0.01),
-    "variant_data": virus_param_list,
-    "db": db
-    # some random parameters just for testing
-    # "step_count": 1,
-    # "load_from_file": False, 
-    # "loading_file_path": "",
-    # "starting_step": 0,
-    # "agent_storage": 0,
-    # "model_storage": 0,
-    # "agent_increment": 0,
-    # "model_increment": 0,
-    # "iteration": 1
+    "variant_data": virus_param_list
 }
 server = ModularServer(CovidModel,
                        [grid,chart,chart_epidemiology,chart_cumulative_effectiveness,vaccinated_age_group,Achart,Bchart,Dchart],

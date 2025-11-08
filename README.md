@@ -1,18 +1,8 @@
 # COVID19-mesa
 
-
-## Authors 
-
 *Santiago Nunez-Corrales, Informatics and NCSA, UIUC (nunezco2@illinois.edu)*
 
 *Eric Jakobsson, Molecular and Cell Biology and NCSA, UIUC (jake@illinois.edu)*
-
-## Developers 
-
-* Angelo Santos
-* Boda Song
-* Xinyi Huang
-
 
 A simple simulation to explore contagion by COVID-19 via agent-based modeling (ABM), as well as potential effectiveness of various measures.
 
@@ -59,7 +49,7 @@ source .venv/bin/activate
 To execute the dashboard interface:
 
 ```bash
-(.venv) python covidserver.py scenarios/[variant_data_filename]
+(.venv) python covidserver.py
 ```
 
 To execute a scenario stored in `scenarios/`:
@@ -102,6 +92,7 @@ Model callibration requires the best possible clinical data estimates for two pa
 ### Scenario creation
 
 To develop scenarios, we strongly recommend starting from the most recently callibrated model that includes policies as well as usin a model without measures as a basis for counterfactual arguments.
+
 
 ## Acknowledgments
 

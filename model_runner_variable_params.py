@@ -21,38 +21,38 @@ import multiprocessing
 import os
 import glob
 
-
-
 directory_list = []
 filenames_list = []
-virus_data_file = open(str(sys.argv[1]))
-for argument in sys.argv[2:]:
+virus_data_file = open(str(sys.argv[1]))  # First arguement must be the location of the variant data file
+
+for argument in sys.argv[2:]:  # Every following arguement must be a folder containing scenario data
     directory_list.append(argument)
 
-for directory in directory_list:
+for directory in directory_list:  # Searches through the directories for scenario files
     file_list = glob.glob(f"{directory}/*.json")
     for file in file_list:
         filenames_list.append(file)
 
 # Read JSON file
 data_list = []
-for file_params in filenames_list:
+for file_params in filenames_list:  # Creates a data list based on the filenames
     with open(file_params) as f:
         data = json.load(f)
         data_list.append(data)
 
-indexes = [range(len(data_list))]
+indexes = [range(len(data_list))]  # Creates a list of indeces associating an index to a data set.
 virus_data = json.load(virus_data_file)
 
-def runModelScenario(data,index,v_percent):
 
-    print(f"Location: { data['location'] }")
-    print(f"Description: { data['description'] }")
-    print(f"Prepared by: { data['prepared-by'] }")
-    print(f"Date: { data['date'] }")
+def runModelScenario(data, index, iterative_input):  # Function that runs a specified scenario given parameters in data.
+
+    print(f"Location: {data['location']}")
+    print(f"Description: {data['description']}")
+    print(f"Prepared by: {data['prepared-by']}")
+    print(f"Date: {data['date']}")
     print("")
     print("Attempting to configure model from file...")
-    print (v_percent)
+    print(v_percent)
     # Observed distribution of mortality rate per age
     age_mortality = {
         AgeGroup.C80toXX: data["model"]["mortalities"]["age"]["80+"],
@@ -159,15 +159,27 @@ def runModelScenario(data,index,v_percent):
         "effective_period": data["model"]["policies"]["vaccine_rollout"]["effective_period"],
         "effectiveness": data["model"]["policies"]["vaccine_rollout"]["effectiveness"],
         "distribution_rate": data["model"]["policies"]["vaccine_rollout"]["distribution_rate"],
-        "cost_per_vaccine":data["model"]["policies"]["vaccine_rollout"]["cost_per_vaccine"],
-        "vaccination_percent": v_percent
+        "cost_per_vaccine": data["model"]["policies"]["vaccine_rollout"]["cost_per_vaccine"],
+        "vaccination_percent": data["model"]["policies"]["vaccine_rollout"]["vaccination_percent"],
+        "step_count": data["model"]["ensemble"]["steps"],
+        "load_from_file": data["model"]["initialization"]["load_from_file"],
+        "loading_file_path": data["model"]["initialization"]["loading_file_path"],
+        "starting_step": data["model"]["initialization"]["starting_step"],
+        "agent_storage": data["model"]["output"]["agent_storage"],
+        "model_storage": data["model"]["output"]["model_storage"],
+        "agent_increment": data["model"]["output"]["agent_increment"],
+        "model_increment": data["model"]["output"]["model_increment"],
+        "model_save_file": data["model"]["output"]["model_save_file"],
+        "agent_save_file": data["model"]["output"]["agent_save_file"],
+        "vector_movement": False
     }
+
+    # Adds variant data into the model in the form of a list.
     virus_param_list = []
     for virus in virus_data["variant"]:
         virus_param_list.append(virus_data["variant"][virus])
     model_params["variant_data"] = virus_param_list
-
-    var_params = {"dummy": range(25,50,25)}
+    var_params = {"dummy": range(25, 50, 25)}
 
     num_iterations = data["ensemble"]["runs"]
     num_steps = data["ensemble"]["steps"]
@@ -180,49 +192,64 @@ def runModelScenario(data,index,v_percent):
         iterations=num_iterations,
         max_steps=num_steps,
         model_reporters={
-                    "Step": compute_stepno,
-                    "CummulPrivValue": compute_cumul_private_value,
-                    "CummulPublValue": compute_cumul_public_value,
-                    "CummulTestCost": compute_cumul_testing_cost,
-                    "Rt": compute_eff_reprod_number,
-                    "Employed": compute_employed,
-                    "Unemployed": compute_unemployed
-                },
+            "Step": compute_stepno,
+            "CummulPrivValue": compute_cumul_private_value,
+            "CummulPublValue": compute_cumul_public_value,
+            "CummulTestCost": compute_cumul_testing_cost,
+            "Rt": compute_eff_reprod_number,
+            "Employed": compute_employed,
+            "Unemployed": compute_unemployed
+        },
         display_progress=True)
 
     print("Parametrization complete:")
     print("")
     print(f"Running file {filenames_list[index]}")
     print("")
-    print(f"Executing an ensemble of size {num_iterations} using {num_steps} steps with {num_iterations} machine cores...")
+    print(
+        f"Executing an ensemble of size {num_iterations} using {num_steps} steps with {num_iterations} machine cores...")
+
+    # Will now return a dictionary containing [iteration:[model_data, agent_data]]
     cm_runs = batch_run.run_all()
+
+    # Extracting data into distinct dataframes
+    model_ldfs = []
+    agent_ldfs = []
+    i = 0
+    for iteration, data in cm_runs.values():
+        model_cm = data[iteration][0]
+        agent_cm = data[iteration][1]
+
+        model_cm["Iteration"] = i
+        agent_cm["Iteration"] = i
+
+        model_ldfs.append(model_cm)
+        agent_ldfs.append(agent_cm)
+        i = i + 1
 
     print("")
     print("Saving results to file...")
 
-    ldfs = []
-    i = 0
+    model_dfs = pd.concat(model_ldfs)
+    agent_dfs = pd.concat(agent_ldfs)
+    model_out = data["output"]["model_save_file"]
+    agent_out = data["output"]["agent_save_file"]
 
-    for cm in cm_runs.values():
-        cm["Iteration"] = i
-        ldfs.append(cm)
-        i = i + 1
-
-    file_out = data["output"]["prefix"]
-
-    dfs = pd.concat(ldfs)
-    dfs.to_csv(file_out + str(v_percent) + ".csv")
+    # Iterative input can be used to directly name the model of interest.
+    dfs.to_csv(model_out + "_" + str(iterative_input) + ".csv")
+    dfs.to_csv(agent_out + "_" + str(iterative_input) + ".csv")
     print(f"Simulation {index} completed without errors.")
 
 
+# Here is where we put the model verification process.
 if __name__ == '__main__':
     processes = []
-    for index,data in enumerate(data_list):
-        for i in range(-4,4,1):
-
-            v_percent = data["model"]["policies"]["vaccine_rollout"]["vaccination_percent"] + i/(10)
+    for index, data in enumerate(data_list):
+        # for iterative process
+        for i in range(0, 1, 1):
+            v_percent = data["model"]["policies"]["vaccine_rollout"]["vaccination_percent"] + i / (10)
             print(f"i: {i}  vaccination_percent: {v_percent}")
-            p = multiprocessing.Process(target=runModelScenario, args=[data, index,v_percent])
+            p = multiprocessing.Process(target=runModelScenario, args=[data, index, v_percent])
             p.start()
             processes.append(p)
 
