@@ -123,6 +123,6 @@
         "runs": 10
     },
   "output": {
-    "prefix": "outcomes/vaccination_outputs/cu-vaccination-test-10-stdM-test_speed"
+    "prefix": "outcomes/vaccination_outputs/cu-vaccination-test-10-stdM-fast"
   }
 }

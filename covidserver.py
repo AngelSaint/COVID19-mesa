@@ -18,11 +18,28 @@ from covidmodel import ValueGroup
 
 # Specific model data
 
+# Default variant for backwards compatibility with scenario files that don't have "variant" key
+DEFAULT_VARIANT = {
+    "Standard": {
+        "Name": "Standard",
+        "Appearance": 0,
+        "Contagtion_Multiplier": 1,
+        "Vaccine_Multiplier": 1,
+        "Asymtpomatic_Multiplier": 1,
+        "Mortality_Multiplier": 1,
+        "Reinfection": False
+    }
+}
+
 virus_data_file = open(sys.argv[1])
 virus_data = json.load(virus_data_file)
 virus_param_list = []
-for virus in virus_data["variant"]:
-    virus_param_list.append(virus_data["variant"][virus])
+
+# Backwards compatibility: handle both old schema (with "variant" key) and new schema (scenario files)
+variant_data = virus_data.get("variant", DEFAULT_VARIANT)
+for virus in variant_data:
+    virus_param_list.append(variant_data[virus])
+
 print(virus_param_list)
 
 
@@ -130,7 +147,7 @@ def agent_portrayal(agent):
 
     return portrayal
 
-grid = CanvasGrid(agent_portrayal,None, 50, 50, 800, 800)
+grid = CanvasGrid(agent_portrayal, 50, 50, 800, 800)
 
 chart = ChartModule([{"Label": "N",
                       "Color": "Darkblue"},

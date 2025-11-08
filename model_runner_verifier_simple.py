@@ -51,6 +51,19 @@ for file_params in filenames_list:      #Creates a data list based on the filena
 indexes = [range(len(data_list))]       #Creates a list of indeces associating an index to a data set.
 virus_data = json.load(virus_data_file)
 
+# Default variant for backwards compatibility with scenario files that don't have "variant" key
+DEFAULT_VARIANT = {
+    "Standard": {
+        "Name": "Standard",
+        "Appearance": 0,
+        "Contagtion_Multiplier": 1,
+        "Vaccine_Multiplier": 1,
+        "Asymtpomatic_Multiplier": 1,
+        "Mortality_Multiplier": 1,
+        "Reinfection": False
+    }
+}
+
 def runModelScenario(data, index, iterative_input): #Function that runs a specified scenario given parameters in data.
 
     print(f"Location: { data['location'] }")
@@ -173,8 +186,10 @@ def runModelScenario(data, index, iterative_input): #Function that runs a specif
 
     #Adds variant data into the model in the form of a list.
     virus_param_list = []
-    for virus in virus_data["variant"]:
-        virus_param_list.append(virus_data["variant"][virus])
+    # Backwards compatibility: handle both old schema (with "variant" key) and new schema (scenario files)
+    variant_data = virus_data.get("variant", DEFAULT_VARIANT)
+    for virus in variant_data:
+        virus_param_list.append(variant_data[virus])
     model_params["variant_data"] = virus_param_list
     var_params = {"dummy": range(25,50,25)}
 
