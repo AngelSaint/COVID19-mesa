@@ -123,6 +123,6 @@
         "runs": 6
     },
     "output": {
-        "prefix": "outcomes/cu-vaccination-test2"
+        "prefix": "outcomes/cu-vaccination-test"
     }
 }

@@ -23,7 +23,18 @@ import glob
 import timeit
 import re
 
-
+# Default variant for backwards compatibility with scenario files that don't have "variant" key
+DEFAULT_VARIANT = {
+    "Standard": {
+        "Name": "Standard",
+        "Appearance": 0,
+        "Contagtion_Multiplier": 1,
+        "Vaccine_Multiplier": 1,
+        "Asymtpomatic_Multiplier": 1,
+        "Mortality_Multiplier": 1,
+        "Reinfection": False
+    }
+}
 
 def runModelScenario(data, index,virus_data):
 
@@ -151,8 +162,10 @@ def runModelScenario(data, index,virus_data):
         "model_increment":  data["output"]["model_increment"]
     }
     virus_param_list = []
-    for virus in virus_data["variant"]:
-        virus_param_list.append(virus_data["variant"][virus])
+    # Backwards compatibility: handle both old schema (with "variant" key) and new schema (scenario files)
+    variant_data = virus_data.get("variant", DEFAULT_VARIANT)
+    for virus in variant_data:
+        virus_param_list.append(variant_data[virus])
     model_params["variant_data"] = virus_param_list
 
     var_params = {"dummy": range(25,50,25)}
@@ -233,8 +246,10 @@ if __name__ == '__main__':
     filenames_list = []
     begin = int(sys.argv[1])
     end = int(sys.argv[2])
-    print(sys.argv[4:])
     print(begin, end)
+
+    print(sys.argv[4:])
+
     virus_data_file = open(str(sys.argv[3]))
     for argument in sys.argv[4:]:
         directory_list.append(str(argument))
@@ -251,10 +266,11 @@ if __name__ == '__main__':
             data = json.load(f)
             data_list.append(data)
 
-    indexes = [range(len(data_list))]
-    virus_data = json.load(virus_data_file)
+indexes = [range(len(data_list))]
 
-    total_iterations = 0
+virus_data = json.load(virus_data_file)
+
+total_iterations = 0
     parameters = []
     for index, data in enumerate(data_list):
         parameter = []
