@@ -1,16 +1,18 @@
 # COVID19-mesa
 
-## Authors
+
+## Authors 
 
 *Santiago Nunez-Corrales, Informatics and NCSA, UIUC (nunezco2@illinois.edu)*
 
 *Eric Jakobsson, Molecular and Cell Biology and NCSA, UIUC (jake@illinois.edu)*
 
-## Developers
+## Developers 
 
 * Angelo Santos
 * Boda Song
 * Xinyi Huang
+
 
 A simple simulation to explore contagion by COVID-19 via agent-based modeling (ABM), as well as potential effectiveness of various measures.
 
@@ -19,11 +21,6 @@ A simple simulation to explore contagion by COVID-19 via agent-based modeling (A
 Reference publication: 
 
 *Núñez-Corrales, S., & Jakobsson, E. (2020). The Epidemiology Workbench: a Tool for Communities to Strategize in Response to COVID-19 and other Infectious Diseases. [medRxiv](https://www.medrxiv.org/content/10.1101/2020.07.22.20159798v2).*
-
-## Requirements
-
-* Python 3.9 or higher
-* pip (Python package manager)
 
 ## Installation (Linux and friends)
 
@@ -36,7 +33,7 @@ git clone https://github.com/snunezcr/COVID19-mesa.git
 2. Create, and activate a virtual environment
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -45,7 +42,6 @@ source .venv/bin/activate
 ```bash
 pip install --upgrade pip
 ```
-
 4. Install dependencies
 
 ```bash
@@ -70,12 +66,6 @@ To execute a scenario stored in `scenarios/`:
 
 ```bash
 (.venv) python model_runner.py [processors] scenarios/[filename]
-```
-
-To run verification tests:
-
-```bash
-(.venv) python model_runner_verifier.py scenarios/Verifier/Variant_Data.json scenarios/Verifier/
 ```
 
 After execution, a CSV file will be stored.
@@ -112,7 +102,6 @@ Model callibration requires the best possible clinical data estimates for two pa
 ### Scenario creation
 
 To develop scenarios, we strongly recommend starting from the most recently callibrated model that includes policies as well as usin a model without measures as a basis for counterfactual arguments.
-
 
 ## Acknowledgments
 
